@@ -1,0 +1,26 @@
+{
+  "image_path": "../test_resources/Picture1.png",
+  "image": {
+    "name": "test Pic 2",
+    "image_path": "../test_resources/Picture2.png"
+  },
+  "images": [
+    {
+      "name": "test Pic 1",
+      "image_path": "../test_resources/Picture1.png"
+    },
+    {
+      "name": "test Pic 2",
+      "image_path": "../test_resources/Picture2.png"
+    },
+    {
+      "name": "test Pic 3",
+      "image_path": "../test_resources/Picture3.png"
+    },
+    {
+      "name": "test Pic 4",
+      "image_path": "../test_resources/Picture4.png"
+    }
+  ],
+  "notes": "from other context"
+}

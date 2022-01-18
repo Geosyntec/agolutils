@@ -1,0 +1,36 @@
+{
+  "image": {
+    "name": "test Pic 2",
+    "image_filepath": "../test_resources/Picture2.png"
+  },
+  "images": [
+    {
+      "name": "test Pic 1",
+      "image_filepath": "../test_resources/Picture1.png"
+    },
+    {
+      "name": "test Pic 2",
+      "image_filepath": "../test_resources/Picture2.png"
+    },
+    {
+      "name": "test Pic 3",
+      "image_filepath": "../test_resources/Picture3.png"
+    },
+    {
+      "name": "test Pic 4",
+      "image_filepath": "../test_resources/Picture4.png"
+    },
+    {
+      "name": "test Pic 5",
+      "image_filepath": "../test_resources/Picture5.png"
+    },
+    {
+      "name": "test Pic 5-rot",
+      "image_filepath": "../test_resources/Picture5-rot.png"
+    },
+    {
+      "name": "test Pic 5 Copy",
+      "image_filepath": "../test_resources/Picture5 - Copy.png"
+    }
+  ]
+}

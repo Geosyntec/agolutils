@@ -1,0 +1,15 @@
+init:
+
+docxtpl:
+  image:
+    # if the value @ key is a string, it's a path
+    - key: image # dict in context
+      filepath_key: image_filepath
+      max-width: 0.5
+      max-height: 2
+      units: inches
+    - key: images # list of dicts in context
+      filepath_key: image_filepath
+      max-width: 3
+      max-height: 2
+      units: inches

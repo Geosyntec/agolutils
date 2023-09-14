@@ -2,7 +2,7 @@ from pathlib import Path
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Inches, Mm
-from PIL import Image
+from PIL import Image, ImageOps
 
 from agolutils.config.config import load_config
 from agolutils.context.context import load_context
@@ -26,9 +26,11 @@ def render_docx_template(
     report_file=None,
     report_file_pattern=None,
 ) -> Path:
-
     config = load_config(config)
     context = load_context(context)
+
+    plugin = get_plugin(config)
+    context, config = plugin(context, config)
 
     _config_report_pattern = config.get("report_file_pattern")
     if report_file_pattern is None and _config_report_pattern:
@@ -40,9 +42,6 @@ def render_docx_template(
 
     if template is None and _config_template:
         template = Path(config["__config_relpath"]) / _config_template
-
-    plugin = get_plugin(config)
-    context = plugin(context, config)
 
     doc = DocxTemplate(template)
     context = parse_docx_images(doc, config, context)
@@ -80,8 +79,11 @@ def build_docx_image(template, info, context):
         width = None
         height = None
 
-        with Image.open(path) as image:
+        with ImageOps.exif_transpose(Image.open(path)) as image:
             # gotta get the actual size of the image to know how to constrain it.
+
+            image.save(path)
+
             w, h = image.size
 
             if max_w and w > h:
@@ -97,7 +99,6 @@ def build_docx_image(template, info, context):
 
 
 def parse_docx_images(template, config, context):
-
     docx_photo_info = config.get("docxtpl", {}).get("image", [])
 
     for info in docx_photo_info:
@@ -107,7 +108,6 @@ def parse_docx_images(template, config, context):
 
 
 def parse_subdocs(template, config, context):
-
     docx_photo_info = config.get("subdocs", {})
 
     return context

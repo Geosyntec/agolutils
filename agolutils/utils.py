@@ -9,12 +9,11 @@ from pytz import timezone
 def get_plugin(config):
     plugin = config.get("plugin")
     if not plugin:
-        return lambda context, config: context
+        return lambda context, cfg: (context, cfg)
 
     _localpath = config["__config_relpath"] / (plugin + ".py")
 
     if _localpath.is_file():
-
         loader = importlib.machinery.SourceFileLoader(plugin, str(_localpath))
         spec = importlib.util.spec_from_loader(plugin, loader)
         mod = importlib.util.module_from_spec(spec)
@@ -46,9 +45,15 @@ def search_files(patterns):
     return found
 
 
-def make_path(path):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+def make_dir(directory):
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+def make_path(filepath):
+    path = Path(filepath)
+    make_dir(path.parent)
     return path
 
 
@@ -56,7 +61,8 @@ def make_path(path):
 PRESETS = {
     "date_time": "%m/%d/%Y %I:%M %p %Z",
     "date_time_military": "%m/%d/%Y %H:%M %Z",
-    "date_time_ts": "%Y-%m-%d_%H-%M-%S-%f",
+    "date_time_ts_ms": "%Y-%m-%d_%H-%M-%S-%f",
+    "date_time_ts": "%Y-%m-%d_%H-%M-%S",
     "date": "%m/%d/%Y",
     "date_ts": "%Y-%m-%d",
     "query": "%Y-%m-%d %H:%M:%S",
@@ -76,7 +82,7 @@ def format_date(timestamp, tz_string=None, fmt=None):
     if tz_string is None:
         tz_string = "UTC"
 
-    utc_dt = datetime.datetime.fromtimestamp(timestamp / 1000, tz=timezone("UTC"))
+    utc_dt = datetime.datetime.fromtimestamp(timestamp, tz=timezone("UTC"))
 
     if fmt in PRESETS:
         return utc_dt.astimezone(timezone(tz_string)).strftime(PRESETS[fmt])

@@ -20,7 +20,6 @@ def search(
         help="glob files ",
     ),
 ):
-
     files = search_files(patterns)
     typer.echo(f"found: {files}")
 

@@ -1,6 +1,4 @@
 import sys
-import json
-import subprocess
 from pathlib import Path
 
 
@@ -10,58 +8,21 @@ def windows(paths, keep_active):
     word = win32com.client.Dispatch("Word.Application")
     wdFormatPDF = 17
 
-    def _convert(docx_filepath, pdf_filepath):
-        try:
+    if paths["batch"]:
+        for docx_filepath in sorted(Path(paths["input"]).glob("[!~]*.doc*")):
+            pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-        finally:
             doc.Close(0)
+    else:
+        docx_filepath = Path(paths["input"]).resolve()
+        pdf_filepath = Path(paths["output"]).resolve()
+        doc = word.Documents.Open(str(docx_filepath))
+        doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+        doc.Close(0)
 
-    try:
-        if paths["batch"]:
-            for docx_filepath in sorted(Path(paths["input"]).glob("*.docx")):
-                pdf_filepath = Path(paths["output"]) / (
-                    str(docx_filepath.stem) + ".pdf"
-                )
-                _convert(docx_filepath, pdf_filepath)
-        else:
-            docx_filepath = Path(paths["input"]).resolve()
-            pdf_filepath = Path(paths["output"]).resolve()
-            _convert(docx_filepath, pdf_filepath)
-
-    finally:
-        if not keep_active:
-            word.Quit()
-
-
-def macos(paths, keep_active):
-    script = (Path(__file__).parent / "convert.jxa").resolve()
-    cmd = [
-        "/usr/bin/osascript",
-        "-l",
-        "JavaScript",
-        str(script),
-        str(paths["input"]),
-        str(paths["output"]),
-        str(keep_active).lower(),
-    ]
-
-    def run(cmd):
-        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
-        while True:
-            line = process.stderr.readline().rstrip()
-            if not line:
-                break
-            yield line.decode("utf-8")
-
-    for line in run(cmd):
-        try:
-            msg = json.loads(line)
-        except ValueError:
-            continue
-        if msg["result"] == "error":
-            print(msg)
-            sys.exit(1)
+    if not keep_active:
+        word.Quit()
 
 
 def resolve_paths(input_path, output_path):
@@ -78,7 +39,7 @@ def resolve_paths(input_path, output_path):
         output["output"] = output_path
     else:
         output["batch"] = False
-        assert str(input_path).endswith(".docx")
+        assert str(input_path).lower().endswith((".docx", ".doc"))
         output["input"] = str(input_path)
         if output_path and output_path.is_dir():
             output_path = str(output_path / (str(input_path.stem) + ".pdf"))
@@ -92,11 +53,7 @@ def resolve_paths(input_path, output_path):
 
 def convert(input_path, output_path=None, keep_active=False):
     paths = resolve_paths(input_path, output_path)
-    if sys.platform == "darwin":
-        return macos(paths, keep_active)
-    elif sys.platform == "win32":
+    if sys.platform == "win32":
         return windows(paths, keep_active)
     else:
-        raise NotImplementedError(
-            "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
-        )
+        raise NotImplementedError("Not implemented for linux or darwin systems.")

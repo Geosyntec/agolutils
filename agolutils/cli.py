@@ -14,14 +14,13 @@ app.registered_commands += (
 
 
 @app.command()
-def search(
-    patterns: List[str] = typer.Argument(
-        ...,
-        help="glob files ",
-    ),
-):
+def search(patterns: List[str] = typer.Argument(..., help="glob files ")):
     files = search_files(patterns)
-    typer.echo(f"found: {files}")
+    str_files = "\n".join(map(str, files))
+    if files:
+        typer.echo(str_files)
+    else:
+        typer.echo("None found.")
 
     return files
 

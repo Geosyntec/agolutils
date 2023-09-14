@@ -1,4 +1,4 @@
-def main(context: dict, config: dict) -> dict:
+def main(context: dict, config: dict) -> tuple[dict, dict]:
     print("demo context preloader")
 
-    return context
+    return context, config

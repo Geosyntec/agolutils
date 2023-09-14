@@ -7,7 +7,6 @@ import typer
 from agolutils.config.config import load_config_cli
 from agolutils.io import load_json
 from agolutils.utils import collect_files, make_path
-from agolutils.context.survey123 import build_survey123_contexts
 
 
 app = typer.Typer()
@@ -29,7 +28,6 @@ def combine(
         "-o",
     ),
 ):
-
     files = collect_files(filepaths)
 
     ctx = {}
@@ -48,11 +46,13 @@ def combine(
 
 
 @app.command()
-def fetch(
+def fetch_survey123(
     oids: List[str] = typer.Argument(...),
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
     env: Optional[Path] = typer.Option(".env", "--env"),
 ):
+    from agolutils.arcgis.survey123 import build_survey123_contexts
+
     cfg = load_config_cli(config)
     files = build_survey123_contexts(cfg, oids, env=env)
 

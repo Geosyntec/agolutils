@@ -1,12 +1,11 @@
 from pathlib import Path
+import json
 from typing import Any, Dict, Optional, Union
 
 from agolutils.io import load_json
 
 
-def load_context(
-    context: Union[Dict, str, Path], config: Optional[Dict] = None
-) -> Dict[str, Any]:
+def load_context(context: Union[Dict, str, Path]) -> Dict[str, Any]:
     if isinstance(context, dict):
         assert "__context_relpath" in context
         return context
@@ -17,5 +16,16 @@ def load_context(
     return context
 
 
-def load_context_cli(config: Optional[Union[str, Path]]) -> Dict[str, Any]:
-    return load_context(config)
+def write_context(mapping: dict, outpath=None):
+    if outpath is None:
+        outpath = "./context.json"
+    out_file = Path(outpath)
+
+    ctx = json.dumps(mapping, indent=2, default=str)
+    out_file.write_text(ctx)
+
+    return out_file
+
+
+def load_context_cli(context: Optional[Union[str, Path]]) -> Dict[str, Any]:
+    return load_context(context)

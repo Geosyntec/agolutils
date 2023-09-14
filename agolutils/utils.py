@@ -5,24 +5,38 @@ from pathlib import Path
 
 from pytz import timezone
 
+null_plugin = lambda context, cfg: (context, cfg)
+
 
 def get_plugin(config):
     plugin = config.get("plugin")
+
     if not plugin:
-        return lambda context, cfg: (context, cfg)
+        return null_plugin
 
     _localpath = config["__config_relpath"] / (plugin + ".py")
 
     if _localpath.is_file():
         loader = importlib.machinery.SourceFileLoader(plugin, str(_localpath))
         spec = importlib.util.spec_from_loader(plugin, loader)
-        mod = importlib.util.module_from_spec(spec)
-        loader.exec_module(mod)
+        if spec is not None:
+            mod = importlib.util.module_from_spec(spec)
+            loader.exec_module(mod)
+            return mod.main
 
+    try:
+        mod = importlib.import_module(plugin)
         return mod.main
+    except ModuleNotFoundError:
+        pass
 
-    mod = importlib.import_module("agolutils.plugins" + "." + plugin)
-    return mod.main
+    try:
+        mod = importlib.import_module("agolutils.plugins" + "." + plugin)
+        return mod.main
+    except ModuleNotFoundError:
+        pass
+
+    return null_plugin
 
 
 def collect_files(filepaths):
@@ -85,7 +99,9 @@ def format_date(timestamp, tz_string=None, fmt=None):
     utc_dt = datetime.datetime.fromtimestamp(timestamp, tz=timezone("UTC"))
 
     if fmt in PRESETS:
-        return utc_dt.astimezone(timezone(tz_string)).strftime(PRESETS[fmt])
+        return utc_dt.astimezone(timezone(tz_string)).strftime(
+            PRESETS[fmt]  # type: ignore
+        )
 
     elif fmt is not None:
         return utc_dt.astimezone(timezone(tz_string)).strftime(fmt)
@@ -94,5 +110,9 @@ def format_date(timestamp, tz_string=None, fmt=None):
         return utc_dt
 
 
-tomorrow = lambda : (datetime.datetime.utcnow() + datetime.timedelta(1)).strftime("%Y-%m-%d")
-yesterday = lambda : (datetime.datetime.utcnow() - datetime.timedelta(1)).strftime("%Y-%m-%d")
+tomorrow = lambda: (datetime.datetime.utcnow() + datetime.timedelta(1)).strftime(
+    "%Y-%m-%d"
+)
+yesterday = lambda: (datetime.datetime.utcnow() - datetime.timedelta(1)).strftime(
+    "%Y-%m-%d"
+)

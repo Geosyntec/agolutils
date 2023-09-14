@@ -92,3 +92,7 @@ def format_date(timestamp, tz_string=None, fmt=None):
 
     else:
         return utc_dt
+
+
+tomorrow = lambda : (datetime.datetime.utcnow() + datetime.timedelta(1)).strftime("%Y-%m-%d")
+yesterday = lambda : (datetime.datetime.utcnow() - datetime.timedelta(1)).strftime("%Y-%m-%d")

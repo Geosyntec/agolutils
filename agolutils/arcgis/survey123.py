@@ -3,9 +3,9 @@ import warnings
 from pathlib import Path
 from typing import List, Optional, Union
 
-import arcgis
 import pandas
 
+from arcgis import gis
 
 from agolutils.utils import make_path, yesterday, tomorrow
 from agolutils.context import write_context
@@ -38,18 +38,21 @@ def build_survey123_contexts(
 
 
 def download_attachment(
-    layer: arcgis.gis.Layer,
+    layer: gis.Layer,
     oid: int,
     attachment_id: int,
     save_path: str = "./",
     filename_prefix: Optional[str] = None,
 ) -> Path:
-    layer.attachments.download(
+    if not layer.properties.hasAttachments:
+        raise ValueError("No Attachments to download.")
+
+    layer.attachments.download(  # type: ignore
         oid=oid, attachment_id=attachment_id, save_path=save_path
     )
     att = next(
         filter(
-            lambda att: att["id"] == attachment_id, layer.attachments.get_list(oid=oid)
+            lambda att: att["id"] == attachment_id, layer.attachments.get_list(oid=oid)  # type: ignore
         )
     )
     name = att["name"]
@@ -64,13 +67,15 @@ def download_attachment(
 
 
 def download_all_attachments(
-    layer: arcgis.gis.Layer,
+    layer: gis.Layer,
     oid: int,
     save_path: Optional[str] = None,
 ) -> List[Path]:
     files = []
 
-    attachments = layer.attachments.get_list(oid=oid)
+    attachments = []
+    if layer.properties.hasAttachments:
+        attachments = layer.attachments.get_list(oid=oid)  # type: ignore
     name = layer.properties.name + "-"
     for att in attachments:
         attachment_id = att["id"]
@@ -273,7 +278,7 @@ def get_recent(layer, related_tables=None, start_date=None, end_date=None):
 
 
 class Survey123Service:
-    def __init__(self, item: arcgis.gis.Item):
+    def __init__(self, item: gis.Item):
         self.service = item
 
         self._survey_layer = None
@@ -283,7 +288,7 @@ class Survey123Service:
     @property
     def survey_layer(self):
         if self._survey_layer is None:
-            self._survey_layer = self.service.layers[0]
+            self._survey_layer = self.service.layers[0]  # type: ignore
         return self._survey_layer
 
     @property

@@ -50,10 +50,9 @@ def load_config(config: Optional[Union[Dict, str, Path]] = None) -> Dict[str, An
 
     elif isinstance(config, (str, Path)):
         path = Path(config).parent.resolve()
-        config = load_yaml(config)
-        config["__config_relpath"] = path
-
-        return config
+        dct = load_yaml(config)
+        dct["__config_relpath"] = path
+        return dct
 
 
 def load_config_cli(config: Optional[Union[str, Path]] = None) -> Dict[str, Any]:

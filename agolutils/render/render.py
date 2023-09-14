@@ -38,9 +38,8 @@ def render_docx_template(
             **context
         )
 
-    _config_template = config.get("docxtpl", {}).get("template_filepath")
-
-    if template is None and _config_template:
+    if template is None:
+        _config_template = config.get("docxtpl", {})["template_filepath"]
         template = Path(config["__config_relpath"]) / _config_template
 
     doc = DocxTemplate(template)

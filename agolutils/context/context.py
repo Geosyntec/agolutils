@@ -11,9 +11,9 @@ def load_context(context: Union[Dict, str, Path]) -> Dict[str, Any]:
         return context
 
     relpath = Path(context).resolve().parent
-    context = load_json(context)
-    context["__context_relpath"] = relpath
-    return context
+    dct = load_json(context)
+    dct["__context_relpath"] = relpath
+    return dct
 
 
 def write_context(mapping: dict, outpath=None):
@@ -27,5 +27,5 @@ def write_context(mapping: dict, outpath=None):
     return out_file
 
 
-def load_context_cli(context: Optional[Union[str, Path]]) -> Dict[str, Any]:
+def load_context_cli(context: Union[str, Path]) -> Dict[str, Any]:
     return load_context(context)

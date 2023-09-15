@@ -2,26 +2,31 @@ import sys
 from pathlib import Path
 
 
-def windows(paths, keep_active):
+def windows(paths):
     import win32com.client
 
     word = win32com.client.Dispatch("Word.Application")
     wdFormatPDF = 17
-
-    if paths["batch"]:
-        for docx_filepath in sorted(Path(paths["input"]).glob("[!~]*.doc*")):
-            pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
+    try:
+        if paths["batch"]:
+            for docx_filepath in sorted(Path(paths["input"]).glob("[!~]*.doc*")):
+                pdf_filepath = Path(paths["output"]) / (
+                    str(docx_filepath.stem) + ".pdf"
+                )
+                doc = word.Documents.Open(str(docx_filepath))
+                try:
+                    doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+                finally:
+                    doc.Close(0)
+        else:
+            docx_filepath = Path(paths["input"]).resolve()
+            pdf_filepath = Path(paths["output"]).resolve()
             doc = word.Documents.Open(str(docx_filepath))
-            doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-            doc.Close(0)
-    else:
-        docx_filepath = Path(paths["input"]).resolve()
-        pdf_filepath = Path(paths["output"]).resolve()
-        doc = word.Documents.Open(str(docx_filepath))
-        doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-        doc.Close(0)
-
-    if not keep_active:
+            try:
+                doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+            finally:
+                doc.Close(0)
+    finally:
         word.Quit()
 
 
@@ -51,9 +56,9 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "win32":
-        return windows(paths, keep_active)
+        return windows(paths)
     else:
         raise NotImplementedError("Not implemented for linux or darwin systems.")

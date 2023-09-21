@@ -163,8 +163,15 @@ def get_related_records(
         if files:
             rel_df = rel_df.merge(pandas.DataFrame(files), on="objectid")
 
+        rel_df["__layer_properties"] = json.loads(
+            json.dumps(slim_layer_properties(table.properties))
+        )
+
+        data = json.loads(rel_df.to_json(orient="records"))
+        for dct in data:
+            dct["__layer_properties"] = slim_layer_properties(table.properties)
         relates[name] = {"name": name}
-        relates[name]["data"] = json.loads(rel_df.to_json(orient="records"))
+        relates[name]["data"] = data
         relates[name]["__layer_properties"] = slim_layer_properties(table.properties)
 
     return relates

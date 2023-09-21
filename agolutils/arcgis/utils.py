@@ -75,14 +75,8 @@ def remap_domains_as_name(context):
 
 def remap_related_domains_as_name(context):
     relates = context.get("relates", {})
-    for dct in relates.values():
-        fields = dct.get("__layer_properties", {}).get("fields", [])
-        domain_fields = filter(domain_filter, fields)
-        for field in domain_fields:
-            name = field["name"]
-            domain = field["domain"]
-            mapping = {d["code"]: d["name"] for d in domain["codedValues"]}
-            for data_dct in dct["data"]:
-                data_dct[name + "__as_name"] = mapping.get(data_dct.get(name), "None")
+    for relate in relates.values():
+        for data_ctx in relate["data"]:
+            remap_domains_as_name(data_ctx)
 
     return context

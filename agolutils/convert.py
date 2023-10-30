@@ -1,4 +1,6 @@
 import sys
+import time
+from typing import Tuple, List
 
 from pathlib import Path
 from pywintypes import com_error
@@ -29,77 +31,103 @@ class WordDocument:
         if self.doc is None:
             return
 
-        self.doc.Close(0)
+        retry_delay_seconds = 0.25
+        retry_n_times = int(60 / retry_delay_seconds)
+        for _ in range(retry_n_times):
+            try:
+                self.doc.Close(0)
+            except com_error as e:
+                if "rejected by callee" in e.strerror.lower():
+                    time.sleep(retry_delay_seconds)
+                    continue
+                raise
+
+            break
 
 
-def get_Word(visible=False):
+def get_Word():
     app = "Word.Application"
-    was_open = False
-    word = None
-    try:
-        word = win32com.client.GetActiveObject(app)
-        was_open = True
-    except com_error:
-        word = win32com.client.gencache.EnsureDispatch(app)
-        word.Visible = visible
 
+    word = win32com.client.DispatchEx(app)
+    word.Visible = False
+
+    return word
+
+
+def windows(input_paths: List[Path], output_paths: List[Path], word=None) -> List[Path]:
+    got_our_own_word = False
     if word is None:
-        raise Exception("Unable to open MS Word")
-
-    return word, was_open
-
-
-def windows(paths):
-    word, was_open = get_Word(visible=False)
+        word = get_Word()
+        got_our_own_word = True
     wdFormatPDF = 17
-    try:
-        if paths["batch"]:
-            for docx_filepath in sorted(Path(paths["input"]).glob("[!~]*.doc*")):
-                pdf_filepath = Path(paths["output"]) / (
-                    str(docx_filepath.stem) + ".pdf"
-                )
-                with WordDocument(word, docx_filepath) as doc:
-                    doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
 
-        else:
-            docx_filepath = Path(paths["input"]).resolve()
-            pdf_filepath = Path(paths["output"]).resolve()
-            with WordDocument(word, docx_filepath) as doc:
-                doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+    try:
+        for docx_inp, pdf_out in zip(input_paths, output_paths):
+            with WordDocument(word, docx_inp) as doc:
+                retry_delay_seconds = 0.25
+                retry_n_times = int(60 / retry_delay_seconds)
+                for _ in range(retry_n_times):
+                    try:
+                        doc.SaveAs(str(pdf_out), FileFormat=wdFormatPDF)
+                    except com_error as e:
+                        if "rejected by callee" in e.strerror.lower():
+                            time.sleep(retry_delay_seconds)
+                            continue
+                        raise
+
+                    break
+
     finally:
-        if not was_open:
+        if got_our_own_word:
             word.Quit()
 
+    return output_paths
 
-def resolve_paths(input_path, output_path):
-    input_path = Path(input_path).resolve()
-    output_path = Path(output_path).resolve() if output_path else None
-    output = {}
-    if input_path.is_dir():
-        output["batch"] = True
-        output["input"] = str(input_path)
-        if output_path:
-            assert output_path.is_dir()
+
+def resolve_paths(input_path, output_path) -> Tuple[List[Path], List[Path]]:
+    _inp = input_path
+    _out = output_path
+
+    # prep input
+    if isinstance(input_path, (str, Path)):
+        input_path = Path(input_path)
+        if input_path.is_dir():
+            input_path = sorted(input_path.glob("[!~]*.doc*"))
         else:
-            output_path = str(input_path)
-        output["output"] = output_path
+            input_path = [input_path]
+    if isinstance(input_path, list):
+        input_path = [
+            Path(p).resolve() for p in input_path if Path(p).suffix in [".docx", ".doc"]
+        ]
+        assert len(input_path) > 0, (_inp, input_path)
     else:
-        output["batch"] = False
-        assert str(input_path).lower().endswith((".docx", ".doc"))
-        output["input"] = str(input_path)
-        if output_path and output_path.is_dir():
-            output_path = str(output_path / (str(input_path.stem) + ".pdf"))
-        elif output_path:
-            assert str(output_path).endswith(".pdf")
-        else:
-            output_path = str(input_path.parent / (str(input_path.stem) + ".pdf"))
-        output["output"] = output_path
-    return output
+        raise ValueError(f"unexpected input for `input_path`:{_inp}")
+
+    # prep output
+    if output_path is None:
+        output_path = [
+            input_path[0].parent / (str(inp.stem) + ".pdf") for inp in input_path
+        ]
+
+    if isinstance(output_path, (str, Path)):
+        output_path = Path(output_path)
+        if output_path.is_dir():
+            output_path = [output_path / (str(inp.stem) + ".pdf") for inp in input_path]
+
+    if isinstance(output_path, list):
+        output_path = [
+            Path(p).resolve() for p in output_path if Path(p).suffix in [".pdf"]
+        ]
+        assert len(output_path) == len(input_path), (_out, output_path)
+    else:
+        raise ValueError(f"unexpected input for `output_path`:{_out}")
+
+    return input_path, output_path
 
 
-def convert(input_path, output_path=None):
-    paths = resolve_paths(input_path, output_path)
+def convert(input_path, output_path=None, word=None):
+    inps, outs = resolve_paths(input_path, output_path)
     if sys.platform == "win32":
-        return windows(paths)
+        return windows(inps, outs, word=word)
     else:
         raise NotImplementedError("Not implemented for linux or darwin systems.")

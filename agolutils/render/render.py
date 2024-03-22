@@ -46,7 +46,10 @@ def render_docx_template(
     context = parse_docx_images(doc, config, context)
     output = make_path(report_file)
 
-    doc.render(context)
+    jinja_env = context.pop("_jinja_env", None)
+    autoescape = context.pop("_autoescape", False)
+
+    doc.render(context, jinja_env=jinja_env, autoescape=autoescape)
     doc.save(output)
 
     return output

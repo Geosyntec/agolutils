@@ -37,7 +37,7 @@ class WordDocument:
             try:
                 self.doc.Close(0)
             except com_error as e:
-                if "rejected by callee" in e.strerror.lower():
+                if "rejected by callee" in e.strerror.lower():  # type: ignore
                     time.sleep(retry_delay_seconds)
                     continue
                 raise
@@ -70,7 +70,7 @@ def windows(input_paths: List[Path], output_paths: List[Path], word=None) -> Lis
                     try:
                         doc.SaveAs(str(pdf_out), FileFormat=wdFormatPDF)
                     except com_error as e:
-                        if "rejected by callee" in e.strerror.lower():
+                        if "rejected by callee" in e.strerror.lower():  # type: ignore
                             time.sleep(retry_delay_seconds)
                             continue
                         raise

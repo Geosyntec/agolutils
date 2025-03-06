@@ -52,7 +52,8 @@ def download_attachment(
     )
     att = next(
         filter(
-            lambda att: att["id"] == attachment_id, layer.attachments.get_list(oid=oid)  # type: ignore
+            lambda att: att["id"] == attachment_id,
+            layer.attachments.get_list(oid=oid),  # type: ignore
         )
     )
     name = att["name"]

@@ -5,8 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 from dotenv import dotenv_values
-from arcgis import gis
-from arcgis.gis import GIS
+from arcgis.gis import GIS, Item
 from agolutils.config.config import load_config
 
 
@@ -82,7 +81,7 @@ def get_content(
     return gis.content.get(itemid)
 
 
-def get_layer_by_prop(obj: gis.Item, prop: str, equals: Any):
+def get_layer_by_prop(obj: Item, prop: str, equals: Any):
     fxn = lambda x: x.properties.get(prop) == equals
     return next(filter(fxn, (obj.layers or []) + (obj.tables or [])))
 

@@ -110,6 +110,7 @@ def parse_docx_images(template, config, context):
 
 
 def parse_subdocs(template, config, context):
-    docx_photo_info = config.get("subdocs", {})
+    _ = config.get("subdocs", {})
+    _ = template
 
     return context

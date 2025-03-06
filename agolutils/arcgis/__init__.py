@@ -1,1 +1,1 @@
-from .utils import get_gis
+from .utils import get_gis as get_gis

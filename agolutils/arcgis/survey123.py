@@ -101,7 +101,7 @@ def get_layer_records_by_objectid(layer, oids: List[int]):
 
 
 def get_layer_by_prop(service, prop, equals):
-    fxn = lambda x: x.properties.get(prop) == equals
+    fxn = lambda x: x.properties.get(prop) == equals  # noqa: E731
     return next(filter(fxn, service.layers + service.tables))
 
 

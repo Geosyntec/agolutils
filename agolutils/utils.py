@@ -5,7 +5,9 @@ from pathlib import Path
 
 from pytz import timezone
 
-null_plugin = lambda context, cfg: (context, cfg)
+
+def null_plugin(context, cfg):
+    return context, cfg
 
 
 def get_plugin(config):
@@ -110,9 +112,10 @@ def format_date(timestamp, tz_string=None, fmt=None):
         return utc_dt
 
 
-tomorrow = lambda: (datetime.datetime.utcnow() + datetime.timedelta(1)).strftime(
-    "%Y-%m-%d"
-)
-yesterday = lambda: (datetime.datetime.utcnow() - datetime.timedelta(1)).strftime(
-    "%Y-%m-%d"
-)
+tomorrow = lambda: (  # noqa: E731
+    datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(1)
+).strftime("%Y-%m-%d")
+
+yesterday = lambda: (  # noqa: E731
+    datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
+).strftime("%Y-%m-%d")

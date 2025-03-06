@@ -82,7 +82,7 @@ def get_content(
 
 
 def get_layer_by_prop(obj: Item, prop: str, equals: Any):
-    fxn = lambda x: x.properties.get(prop) == equals
+    fxn = lambda x: x.properties.get(prop) == equals  # noqa: E731
     return next(filter(fxn, (obj.layers or []) + (obj.tables or [])))
 
 

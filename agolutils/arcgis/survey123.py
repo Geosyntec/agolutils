@@ -257,18 +257,24 @@ def get_recent(layer, related_tables=None, start_date=None, end_date=None):
     if end_date is None:
         end_date = tomorrow()
 
-    time_query = (
-        f"EditDate >= TIMESTAMP '{start_date}' and EditDate <= TIMESTAMP '{end_date}'"
-    )
+    edit_field = layer.properties["editFieldsInfo"]["editDateField"]
+    time_query = "{e} >= DATE '{start_date}' and {e} <= DATE '{end_date}'"
 
     globalids = None
 
     if related_tables:
         dfs = []
         for t in related_tables:
+            tedit_field = t["table"].properties["editFieldsInfo"]["editDateField"]
             sdf = (
                 t["table"]
-                .query(time_query, out_fields=["parentglobalid"], return_geometry=False)
+                .query(
+                    time_query.format(
+                        e=tedit_field, start_date=start_date, end_date=end_date
+                    ),
+                    out_fields=["parentglobalid"],
+                    return_geometry=False,
+                )
                 .sdf
             )
             if not sdf.empty:
@@ -276,7 +282,7 @@ def get_recent(layer, related_tables=None, start_date=None, end_date=None):
         recent_surveys = set(dfs)
         globalids = ", ".join([f"'{x}'" for x in recent_surveys])
 
-    q = f"({time_query})"
+    q = f"({time_query.format(e=edit_field, start_date=start_date, end_date=end_date)})"
     if globalids:
         q += f"or (globalid in ({globalids}))"
 

@@ -2,9 +2,8 @@ from typing import List
 
 import typer
 
-from agolutils import render, context, config
+from agolutils import config, context, render
 from agolutils.utils import search_files
-
 
 app = typer.Typer()
 app.add_typer(context.app, name="context")

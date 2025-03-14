@@ -1,8 +1,8 @@
 import sys
 import time
-from typing import Tuple, List
-
 from pathlib import Path
+from typing import List, Tuple
+
 from pywintypes import com_error
 
 if sys.platform == "win32":
@@ -62,7 +62,7 @@ def windows(input_paths: List[Path], output_paths: List[Path], word=None) -> Lis
     wdFormatPDF = 17
 
     try:
-        for docx_inp, pdf_out in zip(input_paths, output_paths):
+        for docx_inp, pdf_out in zip(input_paths, output_paths, strict=False):
             with WordDocument(word, docx_inp) as doc:
                 retry_delay_seconds = 0.25
                 retry_n_times = int(60 / retry_delay_seconds)

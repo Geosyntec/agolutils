@@ -1,10 +1,11 @@
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 import typer
 
 from agolutils.config.config import load_config_cli
 from agolutils.context.context import load_context_cli
+
 from .render import render_docx_template
 
 app = typer.Typer()

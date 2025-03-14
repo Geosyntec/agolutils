@@ -1,13 +1,12 @@
 from pathlib import Path
 
-from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Inches, Mm
+from docxtpl import DocxTemplate, InlineImage
 from PIL import Image, ImageOps
 
 from agolutils.config.config import load_config
 from agolutils.context.context import load_context
-from agolutils.utils import make_path, get_plugin
-
+from agolutils.utils import get_plugin, make_path
 
 UNITS = {
     "inches": Inches,

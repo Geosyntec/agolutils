@@ -1,5 +1,5 @@
-from pathlib import Path
 import json
+from pathlib import Path
 from typing import Any, Dict, Union
 
 from agolutils.io import load_json

@@ -8,7 +8,6 @@ from agolutils.config.config import load_config_cli
 from agolutils.io import load_json
 from agolutils.utils import collect_files, make_path
 
-
 app = typer.Typer()
 
 

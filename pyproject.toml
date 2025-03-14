@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agolutils"
+requires-python = ">=3.11"
+license = { "text" = "BSD-3-Clause" }
+# url = "https://github.com/Geosyntec/agolutils"
+authors = [{ name = "Austin Orr", email = "aorr@geosyntec.com" }]
+dynamic = ["version"]
+dependencies = [
+    "pandas",
+    "python_dotenv",
+    "pyyaml",
+    "typer",
+    "docxtpl",
+    "pytz",
+    "pywin32",
+    "pillow",
+]
+
+[project.optional-dependencies]
+dev = ["ruff"]
+
+[project.scripts]
+agolutils = "agolutils.cli:app"
+
+[tool.setuptools.dynamic]
+version = { attr = "agolutils.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"*" = ["*"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["_no_git*"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    "PERF", # Perflint
+]

@@ -4,8 +4,9 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from dotenv import dotenv_values
 from arcgis.gis import GIS, Item
+from dotenv import dotenv_values
+
 from agolutils.config.config import load_config
 
 

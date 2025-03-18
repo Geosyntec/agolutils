@@ -21,11 +21,7 @@ def combine(
         dir_okay=True,
         allow_dash=True,
     ),
-    output: Optional[Path] = typer.Option(
-        None,
-        "--output",
-        "-o",
-    ),
+    output: Optional[Path] = typer.Option(None, "--output", "-o"),
 ):
     files = collect_files(filepaths)
 

@@ -1,41 +1,6 @@
 import sys
-import time
 from pathlib import Path
 from typing import List, Tuple
-
-
-def windows(input_paths: List[Path], output_paths: List[Path], word=None) -> List[Path]:
-    from pywintypes import com_error
-
-    from .msword import WordDocument, get_Word
-
-    got_our_own_word = False
-    if word is None:
-        word = get_Word()
-        got_our_own_word = True
-    wdFormatPDF = 17
-
-    try:
-        for docx_inp, pdf_out in zip(input_paths, output_paths, strict=False):
-            with WordDocument(word, docx_inp) as doc:
-                retry_delay_seconds = 0.25
-                retry_n_times = int(60 / retry_delay_seconds)
-                for _ in range(retry_n_times):
-                    try:
-                        doc.SaveAs(str(pdf_out), FileFormat=wdFormatPDF)
-                    except com_error as e:
-                        if "rejected by callee" in e.strerror.lower():  # type: ignore
-                            time.sleep(retry_delay_seconds)
-                            continue
-                        raise
-
-                    break
-
-    finally:
-        if got_our_own_word:
-            word.Quit()
-
-    return output_paths
 
 
 def resolve_paths(input_path, output_path) -> Tuple[List[Path], List[Path]]:
@@ -82,6 +47,8 @@ def resolve_paths(input_path, output_path) -> Tuple[List[Path], List[Path]]:
 def convert(input_path, output_path=None, word=None):
     inps, outs = resolve_paths(input_path, output_path)
     if sys.platform == "win32":
-        return windows(inps, outs, word=word)
+        from .msword import save_as_pdf
+
+        return save_as_pdf(inps, outs, word=word)
     else:
         raise NotImplementedError("Not implemented for linux or darwin systems.")

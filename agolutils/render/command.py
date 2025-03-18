@@ -19,7 +19,8 @@ def render_docx(
     output: Optional[Path] = typer.Option(None, "--output", "-o"),
 ):
     """
-    >>> agolutils render --config config.yml --context context.json --docxtpl template.docx --output report.docx
+    >>> agolutils render --config config.yml --context context.json \
+        --docxtpl template.docx --output report.docx
     """
 
     cfg = load_config_cli(config)

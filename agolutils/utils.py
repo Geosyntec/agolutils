@@ -57,7 +57,7 @@ def collect_files(filepaths):
 def search_files(patterns):
     found = []
     for p in patterns:
-        found.extend(list(map(lambda x: Path(x).resolve(), Path(".").glob(p))))
+        found.extend([x.resolve() for x in Path(".").glob(p)])
     return found
 
 

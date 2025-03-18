@@ -20,8 +20,9 @@ def build_survey123_contexts(
     env: Optional[Union[str, Path]] = None,
     context_file_pattern=None,
 ):
-    if context_file_pattern is None and "context_file_pattern" in config:
-        context_file_pattern = config["context_file_pattern"]
+    context_file_pattern = context_file_pattern or config.get(
+        "context_file_pattern", None
+    )
 
     itemid = config.get("connection", {}).get("survey123", {}).get("service_id", None)
 

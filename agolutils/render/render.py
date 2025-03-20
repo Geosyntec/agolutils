@@ -2,6 +2,7 @@ from pathlib import Path
 
 from docx.shared import Inches, Mm
 from docxtpl import DocxTemplate, InlineImage
+from jinja2.exceptions import TemplateSyntaxError
 from PIL import Image, ImageOps
 
 from agolutils.config.config import load_config
@@ -48,7 +49,16 @@ def render_docx_template(
     jinja_env = context.pop("_jinja_env", None)
     autoescape = context.pop("_autoescape", False)
 
-    doc.render(context, jinja_env=jinja_env, autoescape=autoescape)
+    try:
+        doc.render(context, jinja_env=jinja_env, autoescape=autoescape)
+
+    except TemplateSyntaxError as e:
+        line = str(e.source).splitlines()[e.lineno - 1]
+        raise ValueError(
+            f"Template Syntax Error: {e.message}\n\t"
+            f"line no.: {e.lineno - 1}\n\tsource: {line}"
+        ) from e
+
     doc.save(output)
 
     return output

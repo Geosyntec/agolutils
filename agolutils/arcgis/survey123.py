@@ -97,7 +97,12 @@ def get_layer_records_by_objectid(layer, oids: List[int]):
     object_ids = ",".join(map(str, oids))
     q = layer.query(object_ids=object_ids, return_geometry=False)
     df = q.sdf
-    return json.loads(df.to_json(orient="records"))
+
+    # for compat with pandas v2 since it can't convert from datetime64[ms]
+    for col in df.select_dtypes(include=["datetime64"]).columns:
+        df[col] = df[col].astype("datetime64[ns]")
+
+    return json.loads(df.to_json(orient="records", date_unit="ms"))
 
 
 def get_layer_by_prop(service, prop, equals):

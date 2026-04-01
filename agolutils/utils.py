@@ -98,6 +98,11 @@ def format_date(timestamp, tz_string=None, fmt=None):
     if tz_string is None:
         tz_string = "UTC"
 
+    # if the ts is passed in ms, then it'll be bigger than 1e12.
+    # if it's passed as seconds, then it won't be bigger than 1e10 until year ~2200
+    if timestamp > 1e10:
+        timestamp = timestamp / 1000
+
     utc_dt = datetime.datetime.fromtimestamp(timestamp, tz=timezone("UTC"))
 
     if fmt in PRESETS:
